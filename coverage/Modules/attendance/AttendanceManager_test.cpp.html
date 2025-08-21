@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+        <meta charset="utf-8"/>
+	    <title>AttendanceManager_test.cpp</title>
+	    <link href="../../third-party/google-code-prettify/prettify-CppCoverage.css" type="text/css" rel="stylesheet" />
+	    <script type="text/javascript" src="../../third-party/google-code-prettify/prettify.js"></script>
+	</head>
+    <body onload="prettyPrint()">
+        <h4></h4>
+        <pre class="prettyprint lang-cpp linenums">
+#include "gmock/gmock.h"
+#include &lt;fstream&gt;
+#include &lt;memory&gt;
+#include "AttendanceManager.h"
+#include "StandardGradePolicy.h"
+
+
+<span style = "background-color:#dfd">void createTestFile(const std::string&amp; filename, const std::string&amp; content) {
+    std::ofstream file(filename);
+    file &lt;&lt; content;
+    file.close();
+}</span>
+
+<span style = "background-color:#dfd">TEST(PlayerTest, checkRecodedPointWithDefault) {
+    Player player("Nina");
+    player.recordAttendance("monday");  
+    EXPECT_EQ(player.getPoints(), 1);
+}</span>
+
+<span style = "background-color:#dfd">TEST(PlayerTest, checkRecodedPointWithWednesday) {
+    Player player("Nina");
+    player.recordAttendance("wednesday");
+    EXPECT_EQ(player.getPoints(), 3);
+}</span>
+
+<span style = "background-color:#dfd">TEST(PlayerTest, checkRecodedPointWithSaturday) {
+    Player player("Nina");
+    player.recordAttendance("saturday"); 
+    EXPECT_EQ(player.getPoints(), 2);
+}</span>
+
+<span style = "background-color:#dfd">TEST(PlayerTest, checkWednesdayCount) {
+    Player player("Nina");
+    player.recordAttendance("wednesday");   
+    EXPECT_EQ(player.getWednesdayCount(), 1);
+}</span>
+
+<span style = "background-color:#dfd">TEST(PlayerTest, checkWeekendCount) {
+    Player player("Nina");
+    player.recordAttendance("saturday");   
+    EXPECT_EQ(player.getWeekendCount(), 1);
+}</span>
+
+<span style = "background-color:#dfd">TEST(PlayerTest, IsRemovalCandidateWithNormal) {
+    Player candidate("candidate");
+    EXPECT_TRUE(candidate.isRemovalCandidate());
+}</span>
+
+<span style = "background-color:#dfd">TEST(PlayerTest, isNotRemovealCandidateWithWednesday) {
+    Player candidate("candidate");
+    EXPECT_TRUE(candidate.isRemovalCandidate());
+}</span>
+
+<span style = "background-color:#dfd">TEST(PlayerTest, isNotRemovealCandidateWithSilver) {
+    Player candidate("candidate"); 
+    EXPECT_TRUE(candidate.isRemovalCandidate());
+}</span>
+
+class AttendanceManagerTest : public ::testing::Test {
+protected:
+    std::shared_ptr&lt;IGradePolicy&gt; gradePolicy;
+
+<span style = "background-color:#dfd">    void SetUp() override {
+        gradePolicy = std::make_shared&lt;StandardGradePolicy&gt;();
+    }</span>
+};
+
+<span style = "background-color:#dfd">TEST_F(AttendanceManagerTest, GetWednesdayBonusCount) {
+    std::string content;
+    for (int i = 0; i &lt; 20; ++i) content += "Alice wednesday\n";
+    createTestFile("test.txt", content);</span>
+    
+<span style = "background-color:#dfd">    AttendanceManager manager(gradePolicy);
+    manager.processAttendanceFile("test.txt");
+    manager.calculateResults();</span>
+
+<span style = "background-color:#dfd">    auto players = manager.getPlayers();
+    for (const auto&amp; p : players) {
+        if (p.getName() == "Alice") {
+            EXPECT_EQ(p.getPoints(), 70);
+            EXPECT_EQ(p.getGrade(), "Gold");</span>
+        }
+<span style = "background-color:#dfd">    }
+}</span>
+
+<span style = "background-color:#dfd">TEST_F(AttendanceManagerTest, GetWeekendBonusCount) {
+    std::string content;
+    for (int i = 0; i &lt; 20; ++i) content += "Alice saturday\n";
+    createTestFile("test.txt", content);</span>
+
+<span style = "background-color:#dfd">    AttendanceManager manager(gradePolicy);
+    manager.processAttendanceFile("test.txt");
+    manager.calculateResults();</span>
+
+<span style = "background-color:#dfd">    auto players = manager.getPlayers();
+    for (const auto&amp; p : players) {
+        if (p.getName() == "Alice") {
+            EXPECT_EQ(p.getPoints(), 50);
+            EXPECT_EQ(p.getGrade(), "Gold");</span>
+        }
+<span style = "background-color:#dfd">    }
+}</span>
+
+<span style = "background-color:#dfd">TEST_F(AttendanceManagerTest, HandlesEmptyFile) {
+    createTestFile("empty.txt", "");
+    AttendanceManager manager(gradePolicy);
+    manager.processAttendanceFile("empty.txt");
+    manager.calculateResults();</span>
+
+<span style = "background-color:#dfd">    EXPECT_TRUE(manager.getPlayers().empty());
+    EXPECT_TRUE(manager.getRemovalCandidates().empty());
+}</span>
+
+<span style = "background-color:#dfd">TEST_F(AttendanceManagerTest, getPlayersNumber) {
+    createTestFile("test.txt", "Alice monday\nBob tuesday\nAlice wednesday\n");
+    AttendanceManager manager(gradePolicy);
+    manager.processAttendanceFile("test.txt");</span>
+
+<span style = "background-color:#dfd">    auto players = manager.getPlayers();
+    ASSERT_EQ(players.size(), 2);
+}</span>
+
+<span style = "background-color:#dfd">TEST_F(AttendanceManagerTest, AppliesBonusesAndGradesCorrectly) {
+    std::string content;
+    for (int i = 0; i &lt; 10; ++i) content += "Alice wednesday\n"; 
+    for (int i = 0; i &lt; 9; ++i) content += "Bob saturday\n";
+    createTestFile("test.txt", content);</span>
+
+<span style = "background-color:#dfd">    AttendanceManager manager(gradePolicy);
+    manager.processAttendanceFile("test.txt");
+    manager.calculateResults();</span>
+
+<span style = "background-color:#dfd">    auto players = manager.getPlayers();
+    for (const auto&amp; p : players) {
+        if (p.getName() == "Alice") {
+            EXPECT_EQ(p.getPoints(), 40);
+            EXPECT_EQ(p.getGrade(), "Silver");
+        }
+        else if (p.getName() == "Bob") {
+            EXPECT_EQ(p.getPoints(), 18);
+            EXPECT_EQ(p.getGrade(), "Normal");</span>
+        }
+<span style = "background-color:#dfd">    }
+}</span>
+
+<span style = "background-color:#dfd">TEST_F(AttendanceManagerTest, IdentifiesAndExcludesRemovalCandidates) {
+    createTestFile("test.txt", "RemovedName monday\nNotRemovedName wednesday\n");
+    AttendanceManager manager(gradePolicy);
+    manager.processAttendanceFile("test.txt");
+    manager.calculateResults();</span>
+
+<span style = "background-color:#dfd">    auto candidates = manager.getRemovalCandidates();
+    ASSERT_EQ(candidates.size(), 1);
+    EXPECT_EQ(candidates[0].getName(), "RemovedName");
+}</span></pre>
+        <hr />
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th align="center">
+                        <small>Generated by</small>
+                        <a href="https://github.com/OpenCppCoverage/OpenCppCoverage/releases">
+                            <strong>OpenCppCoverage (Version: 0.9.9.0)</strong>
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </body>
+</html>

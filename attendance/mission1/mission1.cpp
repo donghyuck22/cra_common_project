@@ -28,10 +28,12 @@ void saveAttendanceOfPlayers(const string& name, const string& dayOfWeek) {
 	int addedPoints = 0;
 
 	if (dayOfWeek == "monday") { 
-		dayIndex = 0; addedPoints = 1; 
+		dayIndex = 0; 
+		addedPoints = 1; 
 	}
 	else if (dayOfWeek == "tuesday") { 
-		dayIndex = 1; addedPoints = 1; 
+		dayIndex = 1; 
+		addedPoints = 1; 
 	}
 	else if (dayOfWeek == "wednesday") { 
 		dayIndex = 2; 
@@ -43,14 +45,17 @@ void saveAttendanceOfPlayers(const string& name, const string& dayOfWeek) {
 		addedPoints = 1; 
 	}
 	else if (dayOfWeek == "friday") { 
-		dayIndex = 4; addedPoints = 1; 
+		dayIndex = 4; 
+		addedPoints = 1; 
 	}
 	else if (dayOfWeek == "saturday") { 
-		dayIndex = 5; addedPoints = 2; 
+		dayIndex = 5; 
+		addedPoints = 2; 
 		weekendCount[player_id]++;
 	}
 	else if (dayOfWeek == "sunday") { 
-		dayIndex = 6; addedPoints = 2; 
+		dayIndex = 6; 
+		addedPoints = 2; 
 		weekendCount[player_id]++;
 	}
 

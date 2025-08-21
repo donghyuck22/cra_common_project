@@ -18,7 +18,6 @@ public:
 private:
     std::vector<Player> players_;
 
-    // IPointPolicy 멤버 변수 제거
     std::shared_ptr<IGradePolicy> gradePolicy_;
 
     Player* findPlayerByName(const std::string& name);
